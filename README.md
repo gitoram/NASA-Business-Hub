@@ -1,4 +1,4 @@
-SolSysHab
+NASA Business Hub
 =========
 
-Space Apps Challenge Entry: Solar System Habitats: Systema de reconocimiento de condiciones de temperatura adecuadas para habitación humana en otras planetas.
+Space Apps Challenge Entry: NASA Small Businesses One Stop Shop: Web portal that brings together several resources provided by NASA for small business.
