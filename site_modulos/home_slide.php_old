@@ -1,0 +1,96 @@
+<? 
+include_once "site_includes/class_mysql.php";
+$mysql = new mysql;
+
+$sql = "SELECT pub.IdPub AS IdPub, pub.Titulo AS Titulo, pub.Descripcion AS Descripcion, pub.ArchivoImagen AS ArchivoImagen, UrlAlias,
+		pub.TipoPub AS TipoPub, pub.URLSend AS URLSend
+		FROM publicaciones AS pub	
+		LEFT JOIN url_alias AS url ON ( url.IdPub = pub.IdPub AND url.TipoPub = 'PUB')
+		WHERE EstatusPub = 'A' ORDER BY IdPub DESC LIMIT 5";
+	
+		
+		$res = $mysql->ejecutar($sql,1);	
+		
+/*
+<link rel="stylesheet" type="text/css" href="jquery/advance-slider/css/scrollbar/scrollbar-7-light/scrollbar-7-light.css" media="screen"/>
+*/ 
+?>
+
+<link rel="stylesheet" type="text/css" href="jquery/advance-slider/css/text-thumbnail/text-thumbnail.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="jquery/advance-slider/css/base/advanced-slider-base.css"  media="screen"/>
+
+<script type="text/javascript" src="jquery/advance-slider/js/jquery.touchSwipe.min.js"></script>
+<script type="text/javascript" src="jquery/advance-slider/js/jquery.advancedSlider.min.js"></script>
+
+
+
+<div class="advanced-slider" id="lazy-loading-slider">
+		<div class="slides">
+       
+			<? while($row = mysql_fetch_array($res)){ 
+			
+				 if($row["TipoPub"]== "URL" && $row["URLSend"]!= "URL"){
+					  $UrlPub = $row["URLSend"];
+				  }else{
+					  $UrlPub = "publicacion.php?publicacion=".$row["UrlAlias"];
+				  }
+			?>
+            
+     
+            
+            
+		   <div class="slide" data-image="imagen.php?archivo=<?=$row["ArchivoImagen"];?>&tipo=1&medida=1">
+                <div class="caption" style="background-color:#000; display:block">
+                  <div style="padding:10px">
+                    <div><a href="publicacion.php?publicacion=<?=$row["UrlAlias"];?>" class="txtLinkList" style="font-size:16px; font-weight:normal"><?=$row["Titulo"];?></a></div>
+                  
+                    <div style="font-size:12px; font-style:italic; padding-top:10px"><?=$row["Descripcion"];?></div>
+                  </div>  
+                </div>
+				
+                <div class="thumbnail">
+					<div  style="padding-left:5px; padding-top:10px">
+						<a href="<?=$UrlPub;?>" class="txtSlideTit"><?=$row["Titulo"];?></a>
+                    </div>
+					<? /* <p class="description">sed do eiusmod tempor incididunt ut labore et dolore</p> */ ?>
+    			</div>
+			</div>
+            
+		
+            <? } ?>
+
+		</div>
+        
+</div>
+
+
+
+
+
+<script language="javascript">	
+
+	jQuery(document).ready(function($){
+		$('#lazy-loading-slider').advancedSlider({
+		width: 960,
+		height: 400,
+		skin: 'text-thumbnail',
+		shadow: false,
+		effectType: 'fade',
+		overrideTransition: true,
+		slideButtons: false,
+		thumbnailType: 'scroller',
+		thumbnailWidth: 180,
+		thumbnailHeight: 64,
+		thumbnailOrientation: 'vertical',
+		thumbnailArrows: false,
+	    thumbnailSwipe: true,
+		thumbnailMouseScroll: true,
+		thumbnailScrollbar: true,
+		scrollbarSkin: 'scrollbar-7-light',
+		keyboardNavigation: true
+		});
+	});	
+	
+</script>
+
+                

@@ -1,0 +1,538 @@
+<?
+//ini_set('session.cache_expire', 3600);
+/**/
+//error_reporting(0);
+//ini_set('display_errors', 0);
+/**/
+
+
+
+
+//---- META TAGS DEFAULT ----------------------------------------------
+define ("SITE_TITLE", "Sinaloa Hoy");
+define ("SITE_AUTOR", "Sinaloa Hoy 2013");
+define ("SITE_TEMA", "Tema para Expomoto 2013");
+define ("SITE_DESCRIPCION", "El Evento de Moticiclismo por Excelencia");
+define ("TAGS_PAG", "Motocicletas,Guantes,Cascos,MotoFashion,");
+define ("SITE_EMAIL", "informacion@expomoto.com.mx");
+define ("SITE_DESC2", "El Evento de Moticiclismo por Excelencia");
+define ("SITE_DERECHOS", "&copy;2013 SINALOA HOY Todos los derechos reservados");
+define ("SITE_DISENO", "Fiixcom Soluciones");
+define ("SITE_PUBLICA", "Sinaloa Hoy");
+//-------------------------------------------------------------------
+
+define ("URL_PAG", "http://localhost/expomoto/");
+define ("URL_LOGO", "http://localhost/expomoto/expomoto.jpg");
+
+
+define ("DIR_XMLs", "site_xmls/");
+define ("DIR_BANNERS","site_banners/");
+
+
+
+//::::::::: Datos remotos::::::::::::::::::::::::::::::::::::::::::::::::
+define ("KS_multimedia","2");//Id seccion para multimedia
+define ("DirImgVid","http://www.culturamazatlan.com/culturatv/site_imagenes/img_videos/");
+define ("DirImgGal","http://www.culturamazatlan.com/culturatv/site_imagenes/img_galerias/");
+define ("UrlXmls","http://www.culturamazatlan.com/culturatv/xmlsFiles/");
+define ("UrlImgPHP","http://www.culturamazatlan.com/culturatv/");
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+$_SESSION["ID_RANDOM"]  = rand(1,1000); 
+
+//:::::::: Tablas de publicacioner Relacionadas :::::
+global $TablaRel;
+$TablaRel["GAL"] = "conten_galerias";
+$TablaRel["VID"] = "conten_videos";
+//:::::::::::::::::::::::::::::::::::::::::::::::::::
+
+global $arrMes;
+$arrMes["01"]= "Enero";
+$arrMes["02"]= "Febrero";
+$arrMes["03"]= "Marzo";
+$arrMes["04"]= "Abril";
+$arrMes["05"]= "Mayo";
+$arrMes["06"]= "Junio";
+$arrMes["07"]= "Julio";
+$arrMes["08"]= "Agosto";
+$arrMes["09"]= "Septiembre";
+$arrMes["10"]= "Octubre";
+$arrMes["11"]= "Noviembre";
+$arrMes["12"]= "Diciembre"; 
+
+global $arrMesNum;
+$arrMesNum[1]= "enero";
+$arrMesNum[2]= "febrero";
+$arrMesNum[3]= "marzo";
+$arrMesNum[4]= "abril";
+$arrMesNum[5]= "mayo";
+$arrMesNum[6]= "junio";
+$arrMesNum[7]= "julio";
+$arrMesNum[8]= "Agosto";
+$arrMesNum[9]= "septiembre";
+$arrMesNum[10]= "octubre";
+$arrMesNum[11]= "noviembre";
+$arrMesNum[12]= "diciembre"; 
+
+
+// recibe la fecha en formato A-M-D 2009-08-20 y la retorna con el nombre del mes
+function fechaTexto($strFecha,$fecFormat,$chrSplit,$separador){
+	global $arrMes;
+	if($fecFormat == "AMD"){
+		$separa = explode ($chrSplit,$strFecha);
+		$fecha = $separa[2].$separador.$arrMes[$separa[1]].$separador.$separa[0];
+	}
+	
+	if($fecFormat == "DMA"){ // recibe Dia-mes-año
+		$separa = explode ($chrSplit,$strFecha);
+		$fecha =  $separa[0].$separador.$arrMes[$separa[1]].$separador.$separa[2];
+		//$fecha = $separa[2].$separador.$arrMes[$separa[1]].$separador.$separa[0];
+	}
+	
+	if($fecFormat == "DMAc"){ // recibe Dia-mes-año
+		$separa = explode ($chrSplit,$strFecha);
+		$fecha =  $separa[0].$separador.$arrMes[$separa[1]];
+		//$fecha = $separa[2].$separador.$arrMes[$separa[1]].$separador.$separa[0];
+	}
+	return $fecha;
+}
+
+
+
+
+// detecta que navegador se esta utilizando
+function detectaNavegador(){
+	$strNavegador = strtoupper($_SERVER["HTTP_USER_AGENT"]);
+
+	if (ereg("MSIE",$strNavegador)){
+		$navegador= "IE";
+	}
+	elseif(ereg("FIREFOX",$strNavegador)){
+		$navegador= "FIREFOX";
+	}
+	elseif(ereg("SAFARI",$strNavegador)){
+		$navegador= "SAFARI";
+	}
+	elseif(ereg("OPERA",$strNavegador)){
+		$navegador= "OPERA";
+		
+	}elseif(ereg("CHROME",$strNavegador)){
+		$navegador= "CHROME";
+	}
+	
+	return $navegador;
+}
+
+/*Pa ra los videos instertados con la etiqueta Object o Iframe*/
+function convierteObjectVideo($strObject,$ancho,$alto){
+	
+  $strObjetoVideo  = $strObject;
+  
+  //----------- Para el transparente solo funciona con el Object
+  if (ereg("object",$strObjetoVideo)){
+		$buscar       = array('&lt;/object&gt;','&lt;embed');
+   		$cambia       = array('&lt;param name="wmode" value="transparent" /&gt; &lt;/object&gt;','&lt;embed wmode="transparent" ');
+   		$strObjetoVideo  = str_replace($buscar,$cambia,$strObjetoVideo);
+		
+		
+   }
+   
+   if(ereg("iframe",$strObjetoVideo)){
+ 		$buscar       = array('<iframe');
+   		$cambia       = array('<iframe id="VideoLoad" name="VideoLoad"');
+   		$strObjetoVideo  = str_replace($buscar,$cambia,$strObjetoVideo);
+  }
+  
+	  $strObjetoVideo   = str_replace(chr(92), "", $strObjetoVideo);
+	  $strObjetoVideo   = str_replace("&quot;", chr(34), $strObjetoVideo);
+	  $strObjetoVideo   = str_replace("&lt;", chr(60), $strObjetoVideo);
+	  $strObjetoVideo   = str_replace("&gt;", chr(62), $strObjetoVideo);
+	  
+	  $strDimension    = array("width","height");
+	  $strDimensionN   = array("width='".$ancho."' widthAnt-","height='".$alto."' heightAnt-");
+	  $ObjetoVideo     = str_replace($strDimension, $strDimensionN, $strObjetoVideo);
+  
+ 
+		  
+  return $ObjetoVideo;
+}
+
+/*Cuando es por medio del Id de youtube*/
+function convierteIDYoutube($StrVideoY,$ancho,$alto){
+// $StrVideoY = "[youtube]".$StrVideo."[/youtube]";
+ //$StrVideoY = eregi_replace("\\[youtube\\]([^\\[]*)\\[/youtube\\]","<object  width='".$ancho."' height='".$alto."'><param name='wmode' value='transparent'></param><param name='movie' value='http://www.youtube.com/v/\\1'></param><embed wmode='transparent' src='http://www.youtube.com/v/\\1' type='application/x-shockwave-flash' width='".$ancho."' height='".$alto."'></embed></object>", $StrVideoY); 
+													  
+ $StrVideoY = "<object  width='".$ancho."' height='".$alto."'>
+ 				<param name='wmode' value='transparent'></param>
+				<param name='movie' value='http://www.youtube.com/v/".$StrVideoY."'></param>
+				
+				<embed wmode='transparent' src='http://www.youtube.com/v/".$StrVideoY ."' type='application/x-shockwave-flash' width='".$ancho."' height='".$alto."'>
+				</embed>
+			</object>"; 													  
+													  
+ $StringVideo =  $StrVideoY;
+ return $StringVideo;	 
+}
+
+/*
+Cuando se proporciona la url del video
+Esta fucion no se ha provado con la version nueva de los videos
+*/
+function convierteURLvid($URL,$ancho,$alto,$ArchivoFoto){
+  $DirFoto    = "site_images/imgs_videos/".$ArchivoFoto;
+		
+  $embebVideo ='<embed class="" 
+				  src="mediaplayer.swf" 
+				  width="'.$ancho.'" 
+				  height="'.$alto.'"
+				  allowscriptaccess="always" 
+				  allowfullscreen="true"
+				  wmode="transparent" 
+				  flashvars="width='.$ancho.'&height='.$alto.'&file='.$URL.'&image='.$DirFoto.'&linkfromdisplay=true&searchbar=false&backcolor=000000&frontcolor=EEEEEE&wmode=transparent"/>
+			  </embed>';
+ return $embebVideo;	 
+}
+
+
+
+function quitaCharsLink($texto){
+  $texto = trim($texto);
+  
+  $encontradas = array("Á","á", "É","é", "Í","í", "Ó","ó","&oacute;", "Ú","ú","'");
+  $cambiadas   = array("A","a", "E","e", "I","i", "O","o","o", "U","u","&quot;");
+
+  $texto      = str_replace($encontradas, $cambiadas, $texto);
+
+  return $texto;
+}
+
+function fontResponsiva($str){
+	
+   $strResp = trim($str);
+  
+   $encontradas = array("font-size:30px;","font-size: 30px;","font-size:29px;","font-size: 29px;","font-size:28px;","font-size: 28px;","font-size:27px;","font-size: 27px;","font-size:26px;","font-size: 26px;");
+   $cambiadas   = array("font-size:3.0em;", "font-size:3.0em;","font-size:2.9em;","font-size:2.9em;","font-size:2.8em;","font-size:2.8em;","font-size:2.7em;","font-size:2.7em;","font-size:2.6em;","font-size:2.6em;");
+   $strResp      = str_replace($encontradas, $cambiadas, $strResp);
+   
+   $encontradas = array("font-size:25px;","font-size: 25px;","font-size:24px;","font-size: 24px;","font-size:23px;","font-size: 23px;","font-size:22px;","font-size: 22px;","font-size:21px;","font-size: 21px;");
+   $cambiadas   = array("font-size:2.5em;","font-size:2.5em;","font-size:2.4em;","font-size:2.4em;","font-size:2.3em;","font-size:2.3em;","font-size:2.2em;","font-size:2.2em;","font-size:2.1em;","font-size:2.1em;");
+   $strResp      = str_replace($encontradas, $cambiadas, $strResp);
+   
+   $encontradas = array("font-size:20px;","font-size: 20px;","font-size:19px;","font-size: 19px;","font-size:18px;","font-size: 18px;","font-size17px;","font-size: 17px;","font-size:16px;","font-size: 16px;");
+   $cambiadas   = array("font-size:2.0em;","font-size:2.0em;","font-size:1.9em;","font-size:1.9em;","font-size:1.8em;","font-size:1.8em;","font-size:1.7em;","font-size:1.7em;","font-size:1.6em;","font-size:1.6em;");
+   $strResp      = str_replace($encontradas, $cambiadas, $strResp);
+   
+   
+   $encontradas = array("font-size:15px;","font-size: 15px;","font-size:14px;","font-size: 14px;","font-size:13px;","font-size: 13px;","font-size12px;","font-size: 12px;","font-size:11px;","font-size: 11px;");
+   $cambiadas   = array("font-size:1.5em;","font-size:1.5em;","font-size:1.4em;","font-size:1.4em;","font-size:1.3em;","font-size:1.3em;","font-size:1.2em;","font-size:1.2em;","font-size:1.1em;","font-size:1.1em;");
+   $strResp      = str_replace($encontradas, $cambiadas, $strResp);
+   
+   $encontradas = array("font-size:10px;","font-size: 10px;","font-size:9px;","font-size: 9px;","font-size:8px;","font-size: 8px;","font-size7px;","font-size: 7px;","font-size:6px;","font-size: 6px;");
+   $cambiadas   = array("font-size:1.0em;","font-size:1.0em;","font-size:0.9em;","font-size:0.9em;","font-size:0.8em;","font-size:0.8em;","font-size:0.7em;","font-size:0.7em;","font-size:0.6em;","font-size:0.6em;");
+   $strResp      = str_replace($encontradas, $cambiadas, $strResp);
+	
+	return $strResp;
+}
+
+
+//:::::::::.. funciones de seguridad  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+function antiSqlInjection($str){
+  	$total = 0;
+	$busca  = array(
+					'insert','update','elete','select','select*','drop','truncate','replace','table','tables','from', 'into', 'where','%0a','%0d','content-type:','content-type','bcc:','bcc','to:','cc:','cc','autoreply:','autoreply',
+					'javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'style', 'script', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base',
+					'onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint', 'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick', 'oncontextmenu', 'oncontrolselect',	
+	 				'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged', 'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus', 'onfocusin', 'onfocusout', 'onhelp',
+					'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onmove', 
+					'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit', 'nrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop', 'onsubmit', 'onunload'
+					);
+
+	$strCompara = $str;
+	$strCompara = strtolower(trim($strCompara));
+	//$strCompara = str_replace($busca,"",strtolower($strCompara),$total);
+	
+	for($i=0; $i< count($busca);++$i){
+		if($strCompara == $busca[$i]){//si coincide
+			++$total;
+		}
+	}
+	//echo $total." - ".$str."<br>";
+	if($total > 0){
+		$str = "";
+	}else{
+		//$str   = strip_tags($str,"<p><br><br/><object><embed>");
+		$str   = str_replace(chr(92), "", $str);
+		$str   = addslashes($str);
+		
+	}
+	return $str;
+}
+
+
+if( @$_SESSION["tipoUser"] != "ADMIN")  {//solo se deshabilita para administrador
+
+	if (function_exists("antiSqlInjection")) {
+		
+		foreach ($_POST as $nombre => $valor) {	
+			//$valor = htmlentities($valor);
+			//$palabra = explode(" ",$valor);
+			$palabra = explode(chr(32),$valor);
+			$texto   = "";
+			for($i=0; $i < count($palabra); ++$i){
+				$texto .= antiSqlInjection($palabra[$i])." ";	
+			}			
+			
+			$_POST[$nombre] = trim($texto);
+		}
+		
+		foreach ($_GET as $nombre => $valor) {  
+			//$valor = htmlentities($valor);		
+			//$palabra = explode(" ",$valor);
+			$palabra = explode(chr(32),$valor);
+			$texto   = "";
+			for($i=0; $i < count($palabra); ++$i){
+				$texto .= antiSqlInjection($palabra[$i])." ";
+			}
+			$_GET[$nombre] = trim($texto);
+		}
+	}
+	
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+function limpiar_cadena($texto) {
+   $texto = trim($texto);  
+   //$encontradas = array("|", "'", chr(34), "…", "ü",  "´", "¿", "<", ">");
+   //$cambiadas   = array("&brvbar;", "&acute;", "&quot;", "...", "&uuml;","&acute;", "&iquest;", "&lt;", "&gt;");
+   
+   $encontradas = array("|", "'", chr(34), "…", "ü",  "´", "¿", "<", ">");
+   $cambiadas   = array("&brvbar;", "&acute;", "&quot;", "...", "&uuml;","&acute;", "&iquest;", "&lt;", "&gt;");
+
+   $texto      = str_replace($encontradas, $cambiadas, $texto);
+   return $texto;
+}
+	
+function limpiar_cadena2($texto) {
+  $texto = trim($texto);
+
+  $encontradas = array("'","‘","’","´", "”","“","…");
+  $cambiadas   = array("&acute;", "&acute;", "&acute;", "&quot;", "&quot;", "&quot;", "...");  
+  $texto      = str_replace($encontradas, $cambiadas, $texto);
+  
+  return $texto;
+}	
+
+function limpiar_cadena_comen($texto) {
+  $texto = trim($texto);
+
+  $encontradas = array("'","‘","’","´", "”","“","…");
+  $cambiadas   = array("&acute;", "&acute;", "&acute;", "&quot;", "&quot;", "&quot;", "...");  
+  $texto      = str_replace($encontradas, $cambiadas, $texto);
+  
+  $encontradas = array("|", "'", chr(34), "…", "ü",  "´", "¿", "<", ">");
+  $cambiadas   = array("&brvbar;", "&acute;", "&quot;", "...", "&uuml;","&acute;", "&iquest;", "&lt;", "&gt;");
+  $texto      = str_replace($encontradas, $cambiadas, $texto);
+  
+  return $texto;
+}
+//===========================================================================================================
+function creaJpgImgOrg($dirArchivo,$nomArchivo){// crea un archivo .jpg del original
+	
+	$separa     = explode(".",$nomArchivo); 
+	$nomArcFoto = $separa[0];
+	$Extension  = strtolower($separa[1]);
+	
+	if($Extension != "jpg"){
+
+		if (!extension_loaded('gd') && !extension_loaded('gd2')){		
+			trigger_error("No se dispone de la libreria GD para generar la imagen.", E_USER_WARNING);		
+			return false;	
+		}   
+			// getimagesize($img); 0= ancho, 1= alto, 2= tipo
+			$imgInfo = getimagesize($dirArchivo.$nomArchivo);  
+			switch ($imgInfo[2]) {    
+				case 1: $im = imagecreatefromgif($dirArchivo.$nomArchivo); break;    
+				case 2: $im = imagecreatefromjpeg($dirArchivo.$nomArchivo);  break;    
+				case 3: $im = imagecreatefrompng($dirArchivo.$nomArchivo); break;    
+				default:  trigger_error('Tipo de imagen no reconocido.', E_USER_WARNING);  
+				break;  
+			}
+			
+			$nWidth = round($imgInfo[0]);  $nHeight = round($imgInfo[1]);   
+			$newImg = imagecreatetruecolor($nWidth, $nHeight);  
+			imagecopyresampled($newImg, $im, 0, 0, 0, 0, $nWidth, $nHeight, $imgInfo[0], $imgInfo[1]);  
+			imagejpeg($newImg,$dirArchivo.$nomArcFoto.".jpg");
+			imagedestroy($newImg);
+			unlink($dirArchivo.$nomArchivo);
+		
+	}
+	
+}
+
+//borra imagenes y thumbs nombreArchivo, dirprincipal/, dirThumbs/
+function borraImagenes($nomArch, $dirP, $dirT){
+  global $tamanos_fotos_ancho_h;
+  $separa  = explode(".",$nomArch);
+  $nombArc = $separa[0];
+  $exten   = $separa[1];
+  
+  if(file_exists($dirP.$nombArc.".".$exten)){
+	  unlink($dirP.$nombArc.".".$exten);
+	  //echo "<br>".$dirP.$nombArc.".".$exten."<br>";
+  }
+  
+  //borrar thumbs
+  for ($i = 1;$i <= count($tamanos_fotos_ancho_h); ++$i) {
+	  $thumb  = "";
+	  $thumb = $dirP.$dirT.$nombArc."_".$i.".".$exten;
+	  //echo $thumb;
+	  if(file_exists($thumb)){
+		  unlink($thumb);
+		  //echo $thumb."<br>";
+	  }
+
+}	
+		
+}
+
+//--borra solo los thhumbs
+function borraImagenesThumbs($nomArch, $dirP, $dirT){
+  global $tamanos_fotos_ancho_h;
+  $separa  = explode(".",$nomArch);
+  $nombArc = $separa[0];
+  $exten   = $separa[1];
+  
+  //if(file_exists($dirP.$nombArc.".".$exten)){
+  //	unlink($dirP.$nombArc.".".$exten);
+	  //echo "<br>".$dirP.$nombArc.".".$exten."<br>";
+  //}
+  
+  //borrar thumbs 
+  for ($i = 1;$i <= count($tamanos_fotos_ancho_h); ++$i) {
+	  $thumb  = "";
+	  $thumb = $dirP.$dirT.$nombArc."_".$i.".".$exten;
+	  //echo "<br/>".$thumb."<br/>";
+	  if(file_exists($thumb)){
+		 unlink($thumb);
+		 //echo $thumb."<br>";
+	  }
+
+}	
+		
+}
+//=============================================================================================
+
+function fecha_Mysql($fecha){
+	$separado = explode("-",$fecha);
+	return $separado[2]."-".$separado[1]."-".$separado[0];
+}	
+
+/* recibe una cadena con el nombre del archivo:0908171419592
+y retorna un arreglo con el directorio del año = 09 y el subdir 090817
+*/
+function dirFoto($strDir){
+	$dir["anio"]    = substr($strDir,0,2)."/";
+	$dir["anioMes"] = substr($strDir,0,6)."/";
+	
+	return $dir;
+}
+
+/* recibe una cadena con el nombre del archivo:0908171419592
+y retorna el directorio completo 09/090817/
+*/
+function dirFotoCompleto($strDir){
+	$dirAnio = substr($strDir,0,2)."/";
+	$dirMes  = substr($strDir,0,6)."/";
+	
+	$dir = $dirAnio.$dirMes;
+	return $dir;
+}
+
+//limitarCadena($sumario_audio,100,'.')
+function limitarCadena($cadena,$tamanoCad,$fin) {
+	// Inicializamos las variables 
+	$tamano = $tamanoCad; // tamaño máximo 
+	$contador = 0; 
+	$texto = $cadena;
+	
+	if(strlen($texto)>$tamanoCad){
+		// Cortamos la cadena por los espacios 
+		$arrayTexto = explode(' ',$texto); 
+		$texto = ''; 
+	
+		// Reconstruimos la cadena 
+		while($tamano >= strlen($texto) + strlen($arrayTexto[$contador])){ 
+			$texto .= ' '.$arrayTexto[$contador]; 
+			$contador++; 
+		} 
+		return $texto.$fin; 
+	}else{
+		return $texto;
+	}
+}
+
+//Retorna el ID de Seccion3 que esta marcada como principal para portada
+function readSeccPortada(){
+	global $link;	
+	$sql= "SELECT KeySec3 FROM seccion_portada WHERE EstatusSec='A'";
+	$res = mysql_query($sql,$link);
+	$Secc = mysql_result($res,0,'KeySec3');
+	
+	return $Secc ;
+}
+
+
+
+function generaAelatorios($valIni,$valMax, $total){
+	$num = Array();
+	reset($num);
+	
+	for($i=$valIni ;$i< $total; $i++){
+	   $num[$i]=rand($valIni,$valMax);
+	   if($i>$valIni){
+	   
+		   for($x=$valIni; $x<$i; $x++){
+			 if($num[$i] == $num[$x]){
+			   -- $i;
+			   break;
+			 }
+		  }
+		  
+	   }
+	 }
+	 
+	 /*
+	 foreach($num as $valor){
+	 echo $valor."<br>";
+	 }
+	*/
+	 return $num;
+}
+
+function cambiaComillas($opt,$texto){ 
+
+  $texto= trim($texto);
+
+  if($opt==1){//quitar Comillas
+
+	$encontradas = array(chr(34),"'","'", "'",'"','"',"´");
+
+	$cambiadas   = array( "&quot;","&quot;","&quot;", "&quot;","&quot;","&quot;","&quot;");
+
+	$texto       = str_replace($encontradas, $cambiadas, $texto);
+
+	return $texto;
+
+  }
+
+  else if($opt==2){//poner Comillas
+
+	$texto     = str_replace("&quot;", chr(34),  $texto);	
+
+	return $texto;
+
+  }
+
+}
+
+?>

@@ -1,0 +1,5 @@
+<?php
+
+$servidor = "localhost/onestopshop";
+
+?>

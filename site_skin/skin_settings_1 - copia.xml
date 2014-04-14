@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<easycms ver="2.0">
+<IdCss>1</IdCss>
+<Css>default/tema.css</Css>
+<ImgBgBody>default/imagenes/background-site.jpg</ImgBgBody>
+<BgBody>left center no-repeat fixed</BgBody>
+<BgColor>#676663</BgColor>
+<Logo>default/imagenes/logo.png</Logo>
+<BgHeadAct>N</BgHeadAct>
+<BgHead>default/bgheader.jpg</BgHead>
+<UrlImgs></UrlImgs>
+</easycms>
